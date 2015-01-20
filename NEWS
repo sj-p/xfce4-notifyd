@@ -1,0 +1,121 @@
++--------------------+
+| Xfce Notify Daemon |
++--------------------+
+
+Version 0.2.4 (08 May 2013):
+
+  Bugs fixed:
+    * Fix border drawing when compositing is disabled (bug #10021).
+
+  Updated translations: Bulgarian, Chinese (China), Chinese (Taiwan),
+  Flemish and Indonesian.
+
+Version 0.2.3 (21 April 2013):
+
+  libnotify is now required as a dependency to build a test suite and to
+  show improved notification previews.
+
+  Features:
+    * Add a category to the settings dialog for Xfce4 Settings Manager.
+    * Add widget names to summary ("summary") and body ("body") widgets
+      to allow easier theming. Remove the redundant / buggy summary-bold
+      style property (bug #8431).
+      Themes will have to be updated accordingly.
+
+  Bugs fixed:
+    * Fix notifications not disappearing after clicking an action button.
+    * Handle timeout correctly when smaller than fading time (bug #8580).
+    * Avoid flickering of the notifications.
+    * Accept uri of images in icon_name parameter.
+    * Parse body with g_markup_escape_text which allows us to handle
+      span attributes misused by some clients and to parse strings with
+      "unusual" characters such as & (bug #7773, #8187).
+    * Respect border-width when drawing the notification (bug #9475).
+    * Do not kill notification daemon to apply new theme. Instead, handle
+      style updates of existing notifications.
+    * Show a button in the notification preview (bug #9982).
+    * Add an icon to the notification preview.
+
+  Updated translations: Arabic, Basque, Brazilian, Bulgarian, Castilian,
+  Chinese (China), Chinese (Taiwan), Croatian, Danish, English, Finnish,
+  Flemish, French, Greek, Hebrew, Hungarian, Italian, Japanese, Kazakh,
+  Korean, Lithuanian, Polish, Portuguese, Romanian, Russian, Serbian,
+  Swedish, Turkish, Ukrainian, Uyghur and Valencian.
+
+
+Version 0.2.2 (06 August 2011):
+
+    * New cleaner settings dialog with preview on theme change.
+    * Only initialize the close timeout when all notifications are closed
+      (bug #7467).
+    * Fix race with window becoming invalid (bug #7643).
+    * Fix typo in invalid markup escaping (bug #7773).
+    * Fix PATH_MAX beeing undefined on HURD (bug #7528).
+    * Rename dbus service file to avoid conflicts (bug #7335).
+    * Allow installation of the helpers in a custom location.
+    * Updated translations: Arabic, Basque, Brazilian, Castillan,
+      Chinese, Danish, Flemish, Galician, German, Indonesian, Italian,
+      Japanese, Romanian, Portuguese, Russian, Slovak, Spanish,
+      Swedish and Ukrainian.
+
+Version 0.2.1 (02 Feb 2011):
+
+    * Fix loading of custom icons (bug #6895).
+    * Fix crash introduced in 0.2.0 (bug #6929).
+    * Fade to transparent when screen is composited, remove the setting.
+    * Updated translations: Romanian, Turkish, Polish, Galician, Ukrainian,
+      Indonesian, English GB, German, Czech, Norwegian Bokmal and Dutch.
+
+Version 0.2.0 (27 Nov 2010):
+
+  Features:
+    * Added man page for xfce4-notifyd-config from Evgeni Golov.
+    * Support the 'reason' parameter of the NotificationChanged signal.
+      Note that if you are using libnotify 0.4.4 or older, this will
+      cause memory leaks in *applications* that use libnotify (not in
+      xfce4-notifyd).  In this case, you should compile xfce4-notifyd
+      passing the --enable-old-notification-closed-signature switch
+      to configure.
+    * Add summary-bold style property to allow themes to set the
+      summary field of the notification bold (bug 5773).
+    * Add the spec_version parameter to the GetServerInformation method.
+      This behavior can be disabled by passing the
+      --enable-old-get-server-information-signature flag to
+      configure (bug 5602).
+    * Make notifications unmovable (Jérôme Guelfucci, bug 5248).
+    * Implement support for icon-only notifications (Canonical
+      extension).
+    * Implement support for "gauge" notifications (Canonical extension).
+    * Added proper placement of notifications so they don't overlap when
+      there are multiple on the screen.  This also uses a custom workarea
+      calculation to avoid placing notifications where docked windows have
+      set struts (Jérôme Guelfucci, bug 5248).
+    * Port to libxfce4ui, drop libxfcegui4 dep (Romain Bouvier, bug 6375).
+    * Add a preview button to the preferences dialog.
+
+  Bugfixes:
+    * Use correct COPYING file (GPLv2, not GPLv3).
+    * Fix ugliness with rounded corners on windows sometimes, both with
+      compositing enabled and disabled.
+    * Check for exo-csource at configure time when needed (bug 5783).
+    * Check for dbus-binding-tool at configure time.
+
+
+Version 0.1.0 (24 Nov 2008):
+
+  Initial release.  See TODO for known issues and unfinished features.
+
+  Translations:
+    * ca: Carles Muñoz Gorriz <carlesmu@internautas.org>
+    * da: Per Kongstad <p_kongstad@op.pl>
+    * de: Christian Dywan <christian@twotoasts.de>
+    * el: Stavros Giannouris <stavrosg@hellug.gr>
+    * es: Abel Martín <abel.martin.ruiz@gmail.com>
+    * fi: Jari Rahkonen <jari.rahkonen@pp1.inet.fi>
+    * fr: Maximilian Schleiss <maximilian@xfce.org>
+    * id: Andhika Padmawan <andhika.padmawan@gmail.com>
+    * nb: Terje Uriansrud <terje@uriansrud.net>
+    * nl: Vincent Tunru <projects@vinnl.nl>
+    * pt_PT: Nuno Miguel <nunis@netcabo.pt>
+    * sq: Besnik Bleta <besnik@programeshqip.org>
+    * tr: Gökmen Görgen <gkmngrgn@gmail.com>
