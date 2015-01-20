@@ -53,6 +53,11 @@ struct _XfceNotifyDaemon
     gdouble initial_opacity;
     GtkCornerType notify_location;
 
+    /* 3 members added for new monitor selection modes */
+    guint monitor_mode;
+    gint monitor_screen;
+    gchar *monitor_name;
+
     DBusGConnection *dbus_conn;
     XfconfChannel *settings;
 
@@ -84,6 +89,13 @@ enum
     URGENCY_LOW = 0,
     URGENCY_NORMAL,
     URGENCY_CRITICAL,
+};
+
+enum
+{
+	MONITOR_MOUSE = 0,
+	MONITOR_WINDOW,
+	MONITOR_FIXED,
 };
 
 static void xfce_notify_daemon_screen_changed(GdkScreen *screen,
@@ -360,6 +372,8 @@ xfce_notify_daemon_finalize(GObject *obj)
 
     g_tree_destroy(xndaemon->active_notifications);
 
+    g_free (xndaemon->monitor_name);
+
     if(xndaemon->settings)
         g_object_unref(xndaemon->settings);
 
@@ -578,6 +592,94 @@ xfce_notify_daemon_get_workarea(GdkScreen *screen,
     g_list_free(windows_list);
 }
 
+static gboolean
+xfce_notify_get_monitor_fixed(GdkScreen **screen,
+                              gint *screen_n,
+                              gint *monitor,
+                              XfceNotifyDaemon *xndaemon)
+{
+    GdkDisplay *display = NULL;
+    gint num_monitors;
+    gchar *plug_name = NULL;
+
+    if (xndaemon->monitor_name == NULL || *xndaemon->monitor_name == 0)
+    {
+        return FALSE;
+    }
+
+    *screen_n = xndaemon->monitor_screen;
+    display = gdk_display_get_default ();
+    if (display != NULL)
+    {
+        *screen = gdk_display_get_screen (display, *screen_n);
+    }
+
+    if (*screen == NULL)
+    {
+        return FALSE;
+    }
+
+    num_monitors = gdk_screen_get_n_monitors (*screen);
+
+    /* look for name of monitor */
+    for (*monitor = 0; *monitor < num_monitors; ++(*monitor))
+    {
+        plug_name = gdk_screen_get_monitor_plug_name (*screen, *monitor);
+        if ( plug_name && g_strcmp0 (plug_name, xndaemon->monitor_name) == 0)
+        {
+            DBG("Found fixed monitor name (%s)", plug_name);
+            g_free (plug_name);
+            return TRUE;
+        }
+        g_free (plug_name);
+    }
+
+    /* look for number of monitor */
+    for (*monitor = 0; *monitor < num_monitors; ++(*monitor))
+    {
+        g_strdup_printf (plug_name, "%d", *monitor);
+        if ( plug_name && g_strcmp0 (plug_name, xndaemon->monitor_name) == 0)
+        {
+            DBG("Found fixed monitor number (%s)", plug_name);
+            g_free (plug_name);
+            return TRUE;
+        }
+        g_free (plug_name);
+    }
+
+    return FALSE;
+}
+
+static gboolean
+xfce_notify_get_monitor_focussed(GdkScreen **screen,
+                                 gint *screen_n,
+                                 gint *monitor,
+                                 XfceNotifyDaemon *xndaemon)
+{
+    GdkDisplay *display = NULL;
+    GdkWindow *active_win = NULL;
+    gint num_screens;
+
+    display = gdk_display_get_default ();
+    num_screens = gdk_display_get_n_screens (display);
+    for (*screen_n = 0; *screen_n < num_screens; ++(*screen_n))
+    {
+        *screen = gdk_display_get_screen (display, *screen_n);
+        active_win = gdk_screen_get_active_window (*screen);
+        if (active_win)
+        {
+            *monitor = gdk_screen_get_monitor_at_window (*screen, active_win);
+            g_object_unref (active_win);
+
+            DBG("Found active window");
+
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static void
 xfce_notify_daemon_window_size_allocate(GtkWidget *widget,
                                         GtkAllocation *allocation,
@@ -589,7 +691,7 @@ xfce_notify_daemon_window_size_allocate(GtkWidget *widget,
     gint x, y, monitor, screen_n, max_width;
     GdkRectangle *geom_tmp, geom, initial, widget_geom;
     GList *list;
-    gboolean found = FALSE;
+    gboolean found = FALSE, have_monitor = FALSE;
 
     DBG("Size allocate called for %d", xndaemon->last_notification_id);
 
@@ -612,9 +714,27 @@ xfce_notify_daemon_window_size_allocate(GtkWidget *widget,
         xndaemon->reserved_rectangles[screen_n][monitor] = old_list;
     }
 
-    gdk_display_get_pointer(gdk_display_get_default(), &screen, &x, &y, NULL);
-    monitor = gdk_screen_get_monitor_at_point(screen, x, y);
-    screen_n = gdk_screen_get_number (screen);
+
+    /* choose which monitor is to display notification */
+	DBG("Monitor mode %u", xndaemon->monitor_mode);
+
+    /* handle fixed monitor mode if set & there's a string to check */
+    if (xndaemon->monitor_mode == MONITOR_FIXED)
+    {
+        have_monitor = xfce_notify_get_monitor_fixed (&screen, &screen_n, &monitor, xndaemon);
+    }
+	else if (xndaemon->monitor_mode == MONITOR_WINDOW)
+    {
+        have_monitor = xfce_notify_get_monitor_focussed (&screen, &screen_n, &monitor, xndaemon);
+    }
+
+	if (!have_monitor)
+	{
+		/* default to monitor with mouse pointer */
+		gdk_display_get_pointer(gdk_display_get_default(), &screen, &x, &y, NULL);
+		screen_n = gdk_screen_get_number (screen);
+		monitor = gdk_screen_get_monitor_at_point(screen, x, y);
+	}
 
     DBG("We are on the monitor %i, screen %i", monitor, screen_n);
 
@@ -1198,6 +1318,19 @@ xfce_notify_daemon_settings_changed(XfconfChannel *channel,
         xndaemon->notify_location = G_VALUE_TYPE(value)
                                   ? g_value_get_uint(value)
                                   : GTK_CORNER_TOP_RIGHT;
+    } else if(!strcmp(property, "/monitor-screen")) {
+        xndaemon->monitor_screen = G_VALUE_TYPE(value)
+                                  ? g_value_get_int(value)
+                                  : 0;
+    } else if(!strcmp(property, "/monitor-mode")) {
+        xndaemon->monitor_mode = G_VALUE_TYPE(value)
+                                  ? g_value_get_uint(value)
+                                  : MONITOR_MOUSE;
+    } else if(!strcmp(property, "/monitor-name")) {
+        g_free (xndaemon->monitor_name);
+        xndaemon->monitor_name = G_VALUE_TYPE(value)
+                                  ? g_value_dup_string(value)
+                                  : NULL;
     }
 }
 
@@ -1268,6 +1401,18 @@ xfce_notify_daemon_load_config(XfceNotifyDaemon *xndaemon,
     xndaemon->notify_location = xfconf_channel_get_uint(xndaemon->settings,
                                                       "/notify-location",
                                                       GTK_CORNER_TOP_RIGHT);
+
+    xndaemon->monitor_screen = xfconf_channel_get_int(xndaemon->settings,
+                                                      "/monitor-screen",
+                                                      0);
+
+    xndaemon->monitor_mode = xfconf_channel_get_uint(xndaemon->settings,
+                                                      "/monitor-mode",
+                                                      MONITOR_MOUSE);
+
+	xndaemon->monitor_name = xfconf_channel_get_string(xndaemon->settings,
+                                                      "/monitor-name",
+                                                      NULL);
 
     g_signal_connect(G_OBJECT(xndaemon->settings), "property-changed",
                      G_CALLBACK(xfce_notify_daemon_settings_changed),

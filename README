@@ -1,3 +1,43 @@
+            == About this project ==
+
+In this project I am attempting to add extra configuration features to Xfce's
+notification daemon, xfce4-notifyd (see git.xfce.org/apps/xfce4-notifyd/).
+
+In the Xfce version, the notification always appears on the same monitor as
+the mouse pointer. Call this mode=0.
+
+I have added two more possibilities:
+    mode=1 : to appear on the same monitor as the window that has focus
+    mode=2 : to appear on a fixed, user-configurable monitor
+
+To define these behaviours I have added three new configuration settings.
+Setting these from the command line using xfconf-query:
+
+  to set the mode:
+    $ xfconf-query -c xfce4-notifyd -p /monitor-mode -n -t uint -s 2
+
+  to set the screen number for fixed mode
+    $ xfconf-query -c xfce4-notifyd -p /monitor-screen -n -t int -s 0
+
+  to set the monitor name for fixed mode
+    $ xfconf-query -c xfce4-notifyd -p /monitor-name -n -t string -s "VGA1"
+
+The example above sets notification always on screen 0, monitor VGA1. You
+can also use xfce4-settings-editor to add/edit these settings. No work has
+yet been done on incorporating them in the GUI xfce4-notifyd-config.
+
+To use the original mode, use mode=0 (actually, any number except 1 or 2).
+Output defaults to mode 0 if no monitor can be chosen using the set mode.
+The screen number and monitor name can be easily determined from the output
+of the command:
+    $ xrandr
+
+
+
+\\\\
+The original Xfce README now follows:
+\\\\
+
 Xfce Notify Daemon
 
 The Xfce Notify Daemon (xfce4-notifyd for short) is a smallish program that
