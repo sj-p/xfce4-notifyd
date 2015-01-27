@@ -39,6 +39,15 @@
 
 #include "xfce4-notifyd-config.ui.h"
 
+enum
+{
+	MONITOR_MOUSE = 0,
+	MONITOR_WINDOW,
+	MONITOR_FIXED,
+	NUM_MONITOR_MODES,
+};
+
+
 static void
 xfce_notifyd_config_show_notification_callback(NotifyNotification *notification,
                                                const char         *action,
@@ -231,11 +240,91 @@ xfce_notifyd_config_preview_clicked(GtkButton *button,
     xfce_notifyd_config_show_notification_preview(GTK_WINDOW(dialog));
 }
 
+static void
+xfce4_notifyd_config_set_radio_buttons(GtkWidget *rbtn, guint monitor_mode)
+{
+    GSList *buttons;
+
+
+    buttons = gtk_radio_button_get_group (GTK_RADIO_BUTTON(rbtn));
+
+    if (monitor_mode >= NUM_MONITOR_MODES) monitor_mode = MONITOR_MOUSE;
+
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g_slist_nth_data (buttons, NUM_MONITOR_MODES - 1 - monitor_mode)),
+                                  TRUE);
+}
+
+static void
+xfce4_notifyd_config_mode_changed(XfconfChannel *channel,
+                                  const gchar *property,
+                                  const GValue *value,
+                                  gpointer rbtn)
+{
+    guint monitor_mode = g_value_get_uint (value);
+
+    xfce4_notifyd_config_set_radio_buttons (rbtn, monitor_mode);
+}
+
+static void
+xfce4_notifyd_rbtn_toggled(GtkRadioButton *rbtn,
+                            gpointer channel)
+{
+    gint index;
+    GSList *buttons;
+
+    if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rbtn))) return;
+
+    buttons = gtk_radio_button_get_group (rbtn);
+    index = g_slist_index (buttons, rbtn);
+
+    if ( index < 0 ) return;
+    index = NUM_MONITOR_MODES - 1 - index;
+    if ( index < 0 ) return;
+
+    xfconf_channel_set_uint (channel, "/monitor-mode", (guint) index);
+}
+
+static void
+xfce4_notifyd_config_mon_name_show(GtkWidget *entry, const gchar *text)
+{
+    gtk_entry_set_text (GTK_ENTRY(entry), text);
+}
+
+static void
+xfce4_notifyd_config_mon_name_save(GtkWidget *entry, gpointer channel)
+{
+    xfconf_channel_set_string (channel,
+                               "/monitor-name",
+                               gtk_entry_get_text (GTK_ENTRY(entry)));
+}
+
+static void
+xfce4_notifyd_config_mon_name_changed(XfconfChannel *channel,
+                                          const gchar *property,
+                                          const GValue *value,
+                                          gpointer entry)
+{
+    if ( !G_VALUE_TYPE(value) ) return;
+
+    xfce4_notifyd_config_mon_name_show (entry, g_value_get_string(value));
+}
+
+static gboolean
+xfce4_notifyd_config_mon_name_unfocused(GtkWidget *entry,
+                                        GdkEvent *event,
+                                        gpointer channel)
+{
+    xfce4_notifyd_config_mon_name_save (entry, channel);
+
+    return FALSE;
+}
+
 static GtkWidget *
 xfce4_notifyd_config_setup_dialog(GtkBuilder *builder)
 {
     XfconfChannel *channel;
     GtkWidget *dlg, *btn, *sbtn, *slider, *theme_combo, *position_combo;
+    GtkWidget *screen_num, *rbtn, *entry;
     GtkAdjustment *adj;
     GError *error = NULL;
     gchar *current_theme;
@@ -294,6 +383,40 @@ xfce4_notifyd_config_setup_dialog(GtkBuilder *builder)
                            G_OBJECT(position_combo), "active");
     if(gtk_combo_box_get_active(GTK_COMBO_BOX(position_combo)) == -1)
         gtk_combo_box_set_active(GTK_COMBO_BOX(position_combo), GTK_CORNER_TOP_RIGHT);
+
+    screen_num = GTK_WIDGET(gtk_builder_get_object(builder, "screen_num"));
+    adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(screen_num));
+    xfconf_g_property_bind(channel, "/monitor-screen", G_TYPE_INT,
+                           G_OBJECT(adj), "value");
+
+    rbtn = GTK_WIDGET(gtk_builder_get_object(builder, "radio0"));
+    g_signal_connect(G_OBJECT(rbtn), "toggled",
+                     G_CALLBACK(xfce4_notifyd_rbtn_toggled), channel);
+    xfce4_notifyd_config_set_radio_buttons (rbtn,
+					 xfconf_channel_get_uint(channel, "/monitor-mode", MONITOR_MOUSE));
+    g_signal_connect(G_OBJECT(channel), "property-changed::/monitor-mode",
+                     G_CALLBACK(xfce4_notifyd_config_mode_changed),
+                     rbtn);
+
+    rbtn = GTK_WIDGET(gtk_builder_get_object(builder, "radio1"));
+    g_signal_connect(G_OBJECT(rbtn), "toggled",
+                     G_CALLBACK(xfce4_notifyd_rbtn_toggled), channel);
+
+    rbtn = GTK_WIDGET(gtk_builder_get_object(builder, "radio2"));
+    g_signal_connect(G_OBJECT(rbtn), "toggled",
+                     G_CALLBACK(xfce4_notifyd_rbtn_toggled), channel);
+
+
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "monitor_name"));
+    g_signal_connect(G_OBJECT(entry), "activate",
+                     G_CALLBACK(xfce4_notifyd_config_mon_name_save), channel);
+    g_signal_connect(G_OBJECT(entry), "focus-out-event",
+                     G_CALLBACK(xfce4_notifyd_config_mon_name_unfocused), channel);
+    xfce4_notifyd_config_mon_name_show (entry,
+                    xfconf_channel_get_string(channel, "/monitor-name", ""));
+    g_signal_connect(G_OBJECT(channel), "property-changed::/monitor-name",
+                     G_CALLBACK(xfce4_notifyd_config_mon_name_changed),
+                     entry);
 
     return dlg;
 }

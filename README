@@ -11,7 +11,9 @@ I have added two more possibilities:
     mode=2 : to appear on a fixed, user-configurable monitor
 
 To define these behaviours I have added three new configuration settings.
-Setting these from the command line using xfconf-query:
+They can now be set in the settings GUI xfce4-notifyd-config.
+
+Or, to set these from the command line using xfconf-query:
 
   to set the mode:
     $ xfconf-query -c xfce4-notifyd -p /monitor-mode -n -t uint -s 2
@@ -23,8 +25,7 @@ Setting these from the command line using xfconf-query:
     $ xfconf-query -c xfce4-notifyd -p /monitor-name -n -t string -s "VGA1"
 
 The example above sets notification always on screen 0, monitor VGA1. You
-can also use xfce4-settings-editor to add/edit these settings. No work has
-yet been done on incorporating them in the GUI xfce4-notifyd-config.
+can also use xfce4-settings-editor to add/edit these settings.
 
 To use the original mode, use mode=0 (actually, any number except 1 or 2).
 Output defaults to mode 0 if no monitor can be chosen using the set mode.
