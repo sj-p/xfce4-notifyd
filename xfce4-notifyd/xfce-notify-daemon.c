@@ -93,9 +93,10 @@ enum
 
 enum
 {
-	MONITOR_MOUSE = 0,
-	MONITOR_WINDOW,
-	MONITOR_FIXED,
+    MONITOR_PRIMARY = 0,
+    MONITOR_MOUSE,
+    MONITOR_WINDOW,
+    MONITOR_FIXED,
 };
 
 static void xfce_notify_daemon_screen_changed(GdkScreen *screen,
@@ -598,7 +599,6 @@ xfce_notify_get_monitor_fixed(GdkScreen **screen,
                               gint *monitor,
                               XfceNotifyDaemon *xndaemon)
 {
-    GdkDisplay *display = NULL;
     gint num_monitors;
     gchar *plug_name = NULL;
 
@@ -607,16 +607,22 @@ xfce_notify_get_monitor_fixed(GdkScreen **screen,
         return FALSE;
     }
 
-    *screen_n = xndaemon->monitor_screen;
-    display = gdk_display_get_default ();
-    if (display != NULL)
-    {
-        *screen = gdk_display_get_screen (display, *screen_n);
-    }
+    *screen = gdk_display_get_screen (gdk_display_get_default (),
+                                      xndaemon->monitor_screen);
 
     if (*screen == NULL)
     {
         return FALSE;
+    }
+
+    *screen_n = xndaemon->monitor_screen;
+
+    /* check if primary monitor is wanted */
+    if (g_strcmp0 (xndaemon->monitor_name, "*") == 0)
+    {
+        DBG("Using primary monitor for screen");
+        *monitor = gdk_screen_get_primary_monitor (*screen);
+        return TRUE;
     }
 
     num_monitors = gdk_screen_get_n_monitors (*screen);
@@ -638,7 +644,7 @@ xfce_notify_get_monitor_fixed(GdkScreen **screen,
     for (*monitor = 0; *monitor < num_monitors; ++(*monitor))
     {
         g_strdup_printf (plug_name, "%d", *monitor);
-        if ( plug_name && g_strcmp0 (plug_name, xndaemon->monitor_name) == 0)
+        if (plug_name && g_strcmp0 (plug_name, xndaemon->monitor_name) == 0)
         {
             DBG("Found fixed monitor number (%s)", plug_name);
             g_free (plug_name);
@@ -651,7 +657,7 @@ xfce_notify_get_monitor_fixed(GdkScreen **screen,
 }
 
 static gboolean
-xfce_notify_get_monitor_focussed(GdkScreen **screen,
+xfce_notify_get_monitor_focused (GdkScreen **screen,
                                  gint *screen_n,
                                  gint *monitor,
                                  XfceNotifyDaemon *xndaemon)
@@ -680,6 +686,21 @@ xfce_notify_get_monitor_focussed(GdkScreen **screen,
     return FALSE;
 }
 
+static gboolean
+xfce_notify_get_monitor_mouse(GdkScreen **screen,
+                               gint *screen_n,
+                               gint *monitor,
+                               XfceNotifyDaemon *xndaemon)
+{
+    gint x, y;
+
+    gdk_display_get_pointer (gdk_display_get_default (), screen, &x, &y, NULL);
+    *screen_n = gdk_screen_get_number (*screen);
+    *monitor = gdk_screen_get_monitor_at_point (*screen, x, y);
+
+    return TRUE;
+}
+
 static void
 xfce_notify_daemon_window_size_allocate(GtkWidget *widget,
                                         GtkAllocation *allocation,
@@ -688,7 +709,7 @@ xfce_notify_daemon_window_size_allocate(GtkWidget *widget,
     XfceNotifyDaemon *xndaemon = user_data;
     XfceNotifyWindow *window = XFCE_NOTIFY_WINDOW(widget);
     GdkScreen *screen = NULL;
-    gint x, y, monitor, screen_n, max_width;
+    gint monitor, screen_n, max_width;
     GdkRectangle *geom_tmp, geom, initial, widget_geom;
     GList *list;
     gboolean found = FALSE, have_monitor = FALSE;
@@ -716,25 +737,30 @@ xfce_notify_daemon_window_size_allocate(GtkWidget *widget,
 
 
     /* choose which monitor is to display notification */
-	DBG("Monitor mode %u", xndaemon->monitor_mode);
+    DBG("Monitor mode %u", xndaemon->monitor_mode);
 
     /* handle fixed monitor mode if set & there's a string to check */
-    if (xndaemon->monitor_mode == MONITOR_FIXED)
+    switch (xndaemon->monitor_mode)
     {
-        have_monitor = xfce_notify_get_monitor_fixed (&screen, &screen_n, &monitor, xndaemon);
-    }
-	else if (xndaemon->monitor_mode == MONITOR_WINDOW)
-    {
-        have_monitor = xfce_notify_get_monitor_focussed (&screen, &screen_n, &monitor, xndaemon);
-    }
+        case MONITOR_FIXED:
+            have_monitor = xfce_notify_get_monitor_fixed (&screen, &screen_n, &monitor, xndaemon);
+            break;
 
-	if (!have_monitor)
-	{
-		/* default to monitor with mouse pointer */
-		gdk_display_get_pointer(gdk_display_get_default(), &screen, &x, &y, NULL);
-		screen_n = gdk_screen_get_number (screen);
-		monitor = gdk_screen_get_monitor_at_point(screen, x, y);
-	}
+        case MONITOR_WINDOW:
+            have_monitor = xfce_notify_get_monitor_focused (&screen, &screen_n, &monitor, xndaemon);
+            break;
+
+        case MONITOR_MOUSE:
+            have_monitor = xfce_notify_get_monitor_mouse (&screen, &screen_n, &monitor, xndaemon);
+            break;
+    }
+    if (!have_monitor)
+    {
+        /* default to primary monitor on default screen */
+        screen = gdk_display_get_default_screen (gdk_display_get_default ());
+        screen_n = gdk_screen_get_number (screen);
+        monitor = gdk_screen_get_primary_monitor (screen);
+    }
 
     DBG("We are on the monitor %i, screen %i", monitor, screen_n);
 
@@ -1325,7 +1351,7 @@ xfce_notify_daemon_settings_changed(XfconfChannel *channel,
     } else if(!strcmp(property, "/monitor-mode")) {
         xndaemon->monitor_mode = G_VALUE_TYPE(value)
                                   ? g_value_get_uint(value)
-                                  : MONITOR_MOUSE;
+                                  : MONITOR_PRIMARY;
     } else if(!strcmp(property, "/monitor-name")) {
         g_free (xndaemon->monitor_name);
         xndaemon->monitor_name = G_VALUE_TYPE(value)
@@ -1408,9 +1434,9 @@ xfce_notify_daemon_load_config(XfceNotifyDaemon *xndaemon,
 
     xndaemon->monitor_mode = xfconf_channel_get_uint(xndaemon->settings,
                                                       "/monitor-mode",
-                                                      MONITOR_MOUSE);
+                                                      MONITOR_PRIMARY);
 
-	xndaemon->monitor_name = xfconf_channel_get_string(xndaemon->settings,
+    xndaemon->monitor_name = xfconf_channel_get_string(xndaemon->settings,
                                                       "/monitor-name",
                                                       NULL);
 

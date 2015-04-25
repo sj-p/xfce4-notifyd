@@ -114,170 +114,189 @@
                 <property name="column_spacing">12</property>
                 <property name="row_spacing">6</property>
                 <child>
-				  <object class="GtkFrame" id="frame99">
-					<property name="visible">True</property>
-					<property name="can_focus">False</property>
-					<property name="border_width">6</property>
-					<property name="label-yalign">0.25</property>
-					<child type="label">
-					  <object class="GtkLabel" id="mmode_label">
-						<property name="visible">True</property>
-						<property name="can_focus">False</property>
-						<property name="label" translatable="yes">On which monitor should notifications appear?</property>
-						<property name="xalign">0</property>
-					  </object>
-					</child>
-					<child>
-					  <object class="GtkVBox" id="vbox1">
-						<property name="visible">True</property>
-						<property name="can_focus">False</property>
-						<property name="border_width">6</property>
-						<child>
-						  <object class="GtkRadioButton" id="radio0">
-							<property name="label" translatable="yes">same as the mouse pointer (default)</property>
-							<property name="visible">True</property>
-							<property name="can_focus">True</property>
-							<property name="receives_default">False</property>
-							<property name="xalign">0</property>
-							<property name="active">True</property>
-							<property name="draw_indicator">True</property>
-						  </object>
-						  <packing>
-							<property name="expand">False</property>
-							<property name="fill">True</property>
-							<property name="position">2</property>
-						  </packing>
-						</child>
-						<child>
-						  <object class="GtkRadioButton" id="radio1">
-							<property name="label" translatable="yes">same as the focused window</property>
-							<property name="visible">True</property>
-							<property name="can_focus">True</property>
-							<property name="receives_default">False</property>
-							<property name="xalign">0</property>
-							<property name="active">True</property>
-							<property name="draw_indicator">True</property>
-							<property name="group">radio0</property>
-						  </object>
-						  <packing>
-							<property name="expand">False</property>
-							<property name="fill">True</property>
-							<property name="position">3</property>
-						  </packing>
-						</child>
-						<child>
-						  <object class="GtkRadioButton" id="radio2">
-							<property name="label" translatable="yes">on the following monitor:</property>
-							<property name="visible">True</property>
-							<property name="can_focus">True</property>
-							<property name="receives_default">False</property>
-							<property name="xalign">0</property>
-							<property name="active">True</property>
-							<property name="draw_indicator">True</property>
-							<property name="group">radio0</property>
-						  </object>
-						  <packing>
-							<property name="expand">False</property>
-							<property name="fill">True</property>
-							<property name="position">4</property>
-						  </packing>
-						</child>
-						<child>
-						  <object class="GtkHBox" id="hbox1">
-							<property name="visible">True</property>
-							<property name="can_focus">False</property>
-							<property name="homogeneous">1</property>
-							<child>
-							  <object class="GtkTable" id="table2">
-								<property name="visible">True</property>
-								<property name="can_focus">False</property>
-								<property name="n_rows">2</property>
-								<property name="n_columns">2</property>
-								<property name="column_spacing">12</property>
-								<property name="row_spacing">6</property>
-								<child>
-								  <object class="GtkLabel" id="screenlabel1">
-									<property name="visible">True</property>
-									<property name="can_focus">False</property>
-									<property name="xalign">1</property>
-									<property name="label" translatable="yes">Screen number:</property>
-									<property name="justify">right</property>
-								  </object>
-								  <packing>
-									<property name="left_attach">0</property>
-									<property name="top_attach">0</property>
-								  </packing>
-								</child>
-								<child>
-								  <object class="GtkLabel" id="monnamelabel1">
-									<property name="visible">True</property>
-									<property name="can_focus">False</property>
-									<property name="xalign">1</property>
-									<property name="xpad">2</property>
-									<property name="label" translatable="yes">Monitor name:</property>
-									<property name="justify">right</property>
-								  </object>
-								  <packing>
-									<property name="left_attach">0</property>
-									<property name="top_attach">1</property>
-								  </packing>
-								</child>
-								<child>
-								  <object class="GtkHBox" id="hbox2">
-									<property name="visible">True</property>
-									<property name="can_focus">False</property>
-									<child>
-									  <object class="GtkSpinButton" id="screen_num">
-										<property name="visible">True</property>
-										<property name="can_focus">True</property>
-										<property name="adjustment">adjustment3</property>
-										<property name="climb_rate">1.0</property>
-										<property name="digits">0</property>
-									  </object>
-									  <packing>
-										<property name="expand">False</property>
-										<property name="fill">False</property>
-									  </packing>
-									</child>
-								  </object>
-								  <packing>
-									<property name="left_attach">1</property>
-									<property name="top_attach">0</property>
-								  </packing>
-								</child>
-								<child>
-								  <object class="GtkEntry" id="monitor_name">
-									<property name="visible">True</property>
-									<property name="can_focus">True</property>
-									<property name="width_chars">8</property>
-								  </object>
-								  <packing>
-									<property name="left_attach">1</property>
-									<property name="top_attach">1</property>
-								  </packing>
-								</child>
-							  </object>
-							  <packing>
-								<property name="expand">False</property>
-								<property name="fill">False</property>
-							  </packing>
-							</child>
-						  </object>
-						  <packing>
-							<property name="expand">False</property>
-							<property name="fill">False</property>
-						  </packing>
-						</child>
-					  </object>
-					</child>
-				  </object>
-				  <packing>
+                  <object class="GtkFrame" id="frame99">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">6</property>
+                    <property name="label-xalign">0.25</property>
+                    <property name="label-yalign">0.5</property>
+                    <child type="label">
+                      <object class="GtkLabel" id="mmode_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">On which monitor?</property>
+                        <property name="xalign">0</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkVBox" id="vbox1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="border_width">6</property>
+                        <child>
+                          <object class="GtkRadioButton" id="radio0">
+                            <property name="label" translatable="yes">primary monitor (default)</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="xalign">0</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="tooltip_text" translatable="yes">The primary monitor on the default screen, or the first monitor on that screen if no primary is set.</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="radio1">
+                            <property name="label" translatable="yes">same as the mouse pointer</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="xalign">0</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">radio0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="radio2">
+                            <property name="label" translatable="yes">same as the focused window</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="xalign">0</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">radio0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="radio3">
+                            <property name="label" translatable="yes">on the following monitor:</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="xalign">0</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">radio0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkHBox" id="hbox1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="homogeneous">1</property>
+                            <child>
+                              <object class="GtkTable" id="table2">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="n_rows">2</property>
+                                <property name="n_columns">2</property>
+                                <property name="column_spacing">12</property>
+                                <property name="row_spacing">6</property>
+                                <child>
+                                  <object class="GtkLabel" id="screenlabel1">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="xalign">1</property>
+                                    <property name="label" translatable="yes">Screen number:</property>
+                                    <property name="justify">right</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">0</property>
+                                    <property name="top_attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="monnamelabel1">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="xalign">1</property>
+                                    <property name="xpad">2</property>
+                                    <property name="label" translatable="yes">Monitor name:</property>
+                                    <property name="justify">right</property>
+                                    <property name="tooltip_text" translatable="yes">Enter the name of the monitor, or its number if it has no name. Or enter * to use the primary monitor on this screen.</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">0</property>
+                                    <property name="top_attach">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hbox2">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="screen_num">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="adjustment">adjustment3</property>
+                                        <property name="climb_rate">1.0</property>
+                                        <property name="digits">0</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">False</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="top_attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="monitor_name">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="top_attach">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
                     <property name="left_attach">0</property>
                     <property name="right_attach">2</property>
                     <property name="top_attach">4</property>
                     <property name="bottom_attach">5</property>
                     <property name="x_options">GTK_FILL</property>
-				  </packing>
+                  </packing>
                 </child>
                 <child>
                   <object class="GtkHScale" id="opacity_slider">

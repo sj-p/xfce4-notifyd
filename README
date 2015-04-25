@@ -4,11 +4,13 @@ In this project I am attempting to add extra configuration features to Xfce's
 notification daemon, xfce4-notifyd (see git.xfce.org/apps/xfce4-notifyd/).
 
 In the Xfce version, the notification always appears on the same monitor as
-the mouse pointer. Call this mode=0.
+the mouse pointer. Call this mode=1.
 
-I have added two more possibilities:
-    mode=1 : to appear on the same monitor as the window that has focus
-    mode=2 : to appear on a fixed, user-configurable monitor
+I have added three more possibilities:
+    mode=0 : to appear on the default screen's primary monitor if set,
+                otherwise that screen's first monitor (new default mode)
+    mode=2 : to appear on the same monitor as the window that has focus
+    mode=3 : to appear on a fixed, user-configurable monitor
 
 To define these behaviours I have added three new configuration settings.
 They can now be set in the settings GUI xfce4-notifyd-config.
@@ -27,8 +29,13 @@ Or, to set these from the command line using xfconf-query:
 The example above sets notification always on screen 0, monitor VGA1. You
 can also use xfce4-settings-editor to add/edit these settings.
 
-To use the original mode, use mode=0 (actually, any number except 1 or 2).
-Output defaults to mode 0 if no monitor can be chosen using the set mode.
+To select the primary monitor on a screen other than default, use mode=3
+and enter * as the monitor name. If you're using xfconf-query, remember
+to quote this.
+
+To use the original mode, use mode=1. Output defaults to mode 0 if no monitor
+can be chosen using the set mode.
+
 The screen number and monitor name can be easily determined from the output
 of the command:
     $ xrandr

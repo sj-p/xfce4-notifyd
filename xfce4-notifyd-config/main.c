@@ -41,10 +41,11 @@
 
 enum
 {
-	MONITOR_MOUSE = 0,
-	MONITOR_WINDOW,
-	MONITOR_FIXED,
-	NUM_MONITOR_MODES,
+    MONITOR_PRIMARY = 0,
+    MONITOR_MOUSE,
+    MONITOR_WINDOW,
+    MONITOR_FIXED,
+    NUM_MONITOR_MODES,
 };
 
 
@@ -241,6 +242,25 @@ xfce_notifyd_config_preview_clicked(GtkButton *button,
 }
 
 static void
+xfce_notifyd_config_fixed_set_sensitive_cb (GtkWidget *widget, gpointer data)
+{
+    if (GTK_IS_HBOX (widget))
+        gtk_widget_set_sensitive (widget, GPOINTER_TO_INT (data));
+}
+
+static void
+xfce_notifyd_config_fixed_set_sensitive (GtkWidget *rbtn, gboolean sensitive)
+{
+    GtkWidget *vbox;
+
+    vbox = gtk_widget_get_ancestor (rbtn, GTK_TYPE_VBOX);
+
+    gtk_container_foreach (GTK_CONTAINER (vbox),
+                           xfce_notifyd_config_fixed_set_sensitive_cb,
+                           GINT_TO_POINTER (sensitive));
+}
+
+static void
 xfce4_notifyd_config_set_radio_buttons(GtkWidget *rbtn, guint monitor_mode)
 {
     GSList *buttons;
@@ -248,10 +268,12 @@ xfce4_notifyd_config_set_radio_buttons(GtkWidget *rbtn, guint monitor_mode)
 
     buttons = gtk_radio_button_get_group (GTK_RADIO_BUTTON(rbtn));
 
-    if (monitor_mode >= NUM_MONITOR_MODES) monitor_mode = MONITOR_MOUSE;
+    if (monitor_mode >= NUM_MONITOR_MODES) monitor_mode = MONITOR_PRIMARY;
 
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g_slist_nth_data (buttons, NUM_MONITOR_MODES - 1 - monitor_mode)),
                                   TRUE);
+
+    xfce_notifyd_config_fixed_set_sensitive (rbtn, (monitor_mode == MONITOR_FIXED));
 }
 
 static void
@@ -282,6 +304,8 @@ xfce4_notifyd_rbtn_toggled(GtkRadioButton *rbtn,
     if ( index < 0 ) return;
 
     xfconf_channel_set_uint (channel, "/monitor-mode", (guint) index);
+
+    xfce_notifyd_config_fixed_set_sensitive (GTK_WIDGET (rbtn), (index == MONITOR_FIXED));
 }
 
 static void
@@ -291,7 +315,7 @@ xfce4_notifyd_config_mon_name_show(GtkWidget *entry, const gchar *text)
 }
 
 static void
-xfce4_notifyd_config_mon_name_save(GtkWidget *entry, gpointer channel)
+xfce4_notifyd_config_mon_name_save(GtkEditable *entry, gpointer channel)
 {
     xfconf_channel_set_string (channel,
                                "/monitor-name",
@@ -307,16 +331,6 @@ xfce4_notifyd_config_mon_name_changed(XfconfChannel *channel,
     if ( !G_VALUE_TYPE(value) ) return;
 
     xfce4_notifyd_config_mon_name_show (entry, g_value_get_string(value));
-}
-
-static gboolean
-xfce4_notifyd_config_mon_name_unfocused(GtkWidget *entry,
-                                        GdkEvent *event,
-                                        gpointer channel)
-{
-    xfce4_notifyd_config_mon_name_save (entry, channel);
-
-    return FALSE;
 }
 
 static GtkWidget *
@@ -393,7 +407,7 @@ xfce4_notifyd_config_setup_dialog(GtkBuilder *builder)
     g_signal_connect(G_OBJECT(rbtn), "toggled",
                      G_CALLBACK(xfce4_notifyd_rbtn_toggled), channel);
     xfce4_notifyd_config_set_radio_buttons (rbtn,
-					 xfconf_channel_get_uint(channel, "/monitor-mode", MONITOR_MOUSE));
+                     xfconf_channel_get_uint(channel, "/monitor-mode", MONITOR_MOUSE));
     g_signal_connect(G_OBJECT(channel), "property-changed::/monitor-mode",
                      G_CALLBACK(xfce4_notifyd_config_mode_changed),
                      rbtn);
@@ -406,12 +420,14 @@ xfce4_notifyd_config_setup_dialog(GtkBuilder *builder)
     g_signal_connect(G_OBJECT(rbtn), "toggled",
                      G_CALLBACK(xfce4_notifyd_rbtn_toggled), channel);
 
+    rbtn = GTK_WIDGET(gtk_builder_get_object(builder, "radio3"));
+    g_signal_connect(G_OBJECT(rbtn), "toggled",
+                     G_CALLBACK(xfce4_notifyd_rbtn_toggled), channel);
+
 
     entry = GTK_WIDGET(gtk_builder_get_object(builder, "monitor_name"));
-    g_signal_connect(G_OBJECT(entry), "activate",
+    g_signal_connect(G_OBJECT(entry), "changed",
                      G_CALLBACK(xfce4_notifyd_config_mon_name_save), channel);
-    g_signal_connect(G_OBJECT(entry), "focus-out-event",
-                     G_CALLBACK(xfce4_notifyd_config_mon_name_unfocused), channel);
     xfce4_notifyd_config_mon_name_show (entry,
                     xfconf_channel_get_string(channel, "/monitor-name", ""));
     g_signal_connect(G_OBJECT(channel), "property-changed::/monitor-name",
